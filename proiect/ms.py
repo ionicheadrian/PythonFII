@@ -4,25 +4,35 @@ import random
 class Minesweeper:
 
     def place_scores(self):
+        #cautam fiecare mina plasata anterior
+        # si ii updatam viecare vecin
+        # daca exista overlap (spre exemplu 2 bombe sa aiba acelasi vechin)
+        # crestem scorul acelei celule
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
                 if self.board[i][j]=="M":
                     #updating vecinii :D
+
                     #              sus       jos  | st      dr    | jdr   sst   |   jst   sdr
                     directions = [(-1, 0), (1, 0), (0, -1), (0, 1),(1,1),(-1, -1),(1,-1),(-1,1)]
-    
+
                     for dr, dc in directions:
                         ni, nj = i + dr, j + dc
+                                #ni si nj sunt indexi celulei vecine
+                                #iar mai jos verificam daca vecinul curent exista (ie suntem pe o celula la margine )
                         if 0 <= ni < len(self.board) and 0 <= nj < len(self.board[ni]):
                             if self.board[ni][nj] != "M":
                                 self.board[ni][nj] += 1
 
     def place_flag(self,x :int ,y :int):
+
+        #debugging stuff
         if not (0 <= x < self.board_size and 0 <= y < self.board_size):
             print("="*10)
             print(f"Coordonate invalide! x:{x} y:{y}")
             print("="*10)
             return
+        #still debugging , functia asta trebuie doar sa puna un flag si sa creasca un contor (sau sa scada)
         if self.board[x][y]=='M':
             print("="*10)
             print("Ai prins o bomba!")
@@ -32,8 +42,10 @@ class Minesweeper:
         
 
     def init_mines(self,tabla:list[list],dificultate:str,n:int):
+        
+        #initializam numarul de bombe bazat pe dificultate
         if dificultate=="easy":
-            k_mines=n/2
+            k_mines=n//2
         elif dificultate=="medium":
             k_mines=int(random.randint(n//4,n//2))
         elif dificultate=="hard":
