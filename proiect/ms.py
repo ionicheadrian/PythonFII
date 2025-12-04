@@ -2,6 +2,16 @@
 import random
 
 class Minesweeper:
+    class bcolors:
+                HEADER = '\033[95m'
+                OKBLUE = '\033[94m'
+                OKCYAN = '\033[96m'
+                OKGREEN = '\033[92m'
+                WARNING = '\033[93m'
+                FAIL = '\033[91m'
+                ENDC = '\033[0m'
+                BOLD = '\033[1m'
+                UNDERLINE = '\033[4m'
 
     def place_scores(self):
         #cautam fiecare mina plasata anterior
@@ -83,23 +93,48 @@ class Minesweeper:
         self.board  = self.make_board(board_size)
         self.init_mines(self.board,self.dif,self.board_size)
         self.place_scores()
-        #todo maybe calculam scorurile
-        #todo place flag
         #todo place mutare
 
     def __str__(self):
-        rez="Matricea afisata\n"
-        for linie in self.board:
-            for cell in linie:
-                rez+=f"{cell} "
-            rez+='\n'
+        
+        rez=''
+        for i in range(self.board_size):
+            for j in range(self.board_size):
+                cell=self.board[i][j]
+
+                if cell == "M":
+                    rez += self.bcolors.FAIL + cell + self.bcolors.ENDC + " "
+                elif cell == "F":
+                    rez += self.bcolors.BOLD + cell + self.bcolors.ENDC +" "
+                elif isinstance(cell, int):
+                    if cell == 0:
+                        rez += self.bcolors.OKBLUE + "0" + self.bcolors.ENDC + " "
+                    elif cell == 1:
+                        rez += self.bcolors.WARNING + str(cell) + self.bcolors.ENDC + " "
+                    elif cell == 2:
+                        rez += self.bcolors.OKGREEN + str(cell) + self.bcolors.ENDC + " "
+                    else:
+                        rez += self.bcolors.HEADER + str(cell) + self.bcolors.ENDC + " "
+            rez+="\n"
         return rez
 
 
+
+
 n=7
-game=Minesweeper(n,"medium")
-print(game)
-print()
-for i in range(random.randint(1,7)):
-    game.place_flag(random.randint(0,n-1),random.randint(0,n-1))   
-print(game)
+game=Minesweeper(n,"hard")
+# print(game)
+# print()
+# for i in range(random.randint(1,7)):
+#     game.place_flag(random.randint(0,n-1),random.randint(0,n-1))   
+# print(game)
+
+
+comanda=input("comanda: ")
+while comanda!="exit":
+    if comanda == "place_flag":
+        x=int(input("     Scrie x:"))
+        y=int(input("     Scrie y:"))
+        game.place_flag(x,y)
+    print(game)
+    comanda=input("comanda: ")
