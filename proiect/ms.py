@@ -61,6 +61,8 @@ class Minesweeper:
         elif dificultate=="hard":
             k_mines=int(random.randint(n//2,n))
         
+        print(f"Avem {k_mines}")
+
         while k_mines:
             x=int(random.randint(0,n-1))
             y=int(random.randint(0,n-1))
@@ -68,7 +70,6 @@ class Minesweeper:
                 x=int(random.randint(0,n-1))
                 y=int(random.randint(0,n-1))
             tabla[x][y]='M'
-            print(f"Avem {k_mines} si am pus una la [{x}][{y}]")
             k_mines-=1
 
             
@@ -91,6 +92,7 @@ class Minesweeper:
         
         print(f"initializat tabla cu board size:{self.board_size}, dif: {self.dif}")
         self.board  = self.make_board(board_size)
+        self.show_board = self.board
         self.init_mines(self.board,self.dif,self.board_size)
         self.place_scores()
         #todo place mutare
@@ -100,13 +102,13 @@ class Minesweeper:
         rez=''
         for i in range(self.board_size):
             for j in range(self.board_size):
-                cell=self.board[i][j]
+                cell=self.show_board[i][j]
 
                 if cell == "M":
-                    rez += self.bcolors.FAIL + cell + self.bcolors.ENDC + " "
-                elif cell == "F":
+                    rez += self.bcolors.OKBLUE + "0" + self.bcolors.ENDC + " "
+                if cell == "F":
                     rez += self.bcolors.BOLD + cell + self.bcolors.ENDC +" "
-                elif isinstance(cell, int):
+                elif isinstance(cell, int) and True == True:            #todo add logit pt aratat scorurile
                     if cell == 0:
                         rez += self.bcolors.OKBLUE + "0" + self.bcolors.ENDC + " "
                     elif cell == 1:
@@ -129,7 +131,7 @@ game=Minesweeper(n,"hard")
 #     game.place_flag(random.randint(0,n-1),random.randint(0,n-1))   
 # print(game)
 
-
+print(game)
 comanda=input("comanda: ")
 while comanda!="exit":
     if comanda == "place_flag":
