@@ -1,4 +1,13 @@
 #Minesweeper :D
+#todo
+#do logic for reveal
+#gui
+#implement gui
+#pasii de joc
+#winning condition
+#scor pe flag 
+#scos + adaugat flagurile
+#MAKE AI >:)
 import random
 
 class Minesweeper:
