@@ -13,6 +13,23 @@ class Minesweeper:
                 BOLD = '\033[1m'
                 UNDERLINE = '\033[4m'
 
+    def reveal(self,x,y):
+        if self.show_board[x][y]!=0:
+            return
+        if self.show_board[x][y] != self.board[x][y]:
+            return
+        self.show_board[x][y]=self.board[x][y]
+
+        if self.board[x][y] == 0:
+            directions = [(-1, 0), (1, 0), (0, -1), (0, 1),(1,1),(-1, -1),(1,-1),(-1,1)]
+            for dr,dc in directions:
+                if 0<= x + dr < self.board_size and 0 <= y + dc < self.board_size:
+                    self.reveal(x+dr,y+dc)
+
+
+
+
+
     def place_scores(self):
         #cautam fiecare mina plasata anterior
         # si ii updatam viecare vecin
@@ -48,6 +65,7 @@ class Minesweeper:
             print("Ai prins o bomba!")
             print("="*10)
         self.board[x][y]='F'
+        self.show_board[x][y]='F'
         self.flags+=1
         
 
@@ -69,7 +87,9 @@ class Minesweeper:
             while tabla[x][y]=='M':
                 x=int(random.randint(0,n-1))
                 y=int(random.randint(0,n-1))
+                print(f"ai la {x} si {y}")
             tabla[x][y]='M'
+            print(f"ai la {x} si {y}")
             k_mines-=1
 
             
@@ -92,7 +112,7 @@ class Minesweeper:
         
         print(f"initializat tabla cu board size:{self.board_size}, dif: {self.dif}")
         self.board  = self.make_board(board_size)
-        self.show_board = self.board
+        self.show_board = [row[:] for row in self.board] #acum chiar ca am copiat board ul
         self.init_mines(self.board,self.dif,self.board_size)
         self.place_scores()
         #todo place mutare
@@ -138,5 +158,9 @@ while comanda!="exit":
         x=int(input("     Scrie x:"))
         y=int(input("     Scrie y:"))
         game.place_flag(x,y)
+    if comanda == "reveal":
+        x=int(input("     Scrie x:"))
+        y=int(input("     Scrie y:"))
+        game.reveal(x,y)
     print(game)
     comanda=input("comanda: ")
