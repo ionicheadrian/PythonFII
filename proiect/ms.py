@@ -9,6 +9,7 @@
 #scos + adaugat flagurile
 #MAKE AI >:)
 import random
+import pygame
 
 class Minesweeper:
     class bcolors:
