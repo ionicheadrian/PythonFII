@@ -136,9 +136,13 @@ class Game_engine:
                 if celula.type == "x":
                     celula.revealed = not celula.revealed
     
-    def get_cellpos(self, x, y):
-        """
-        Returneaza coordonatele celulei la pozitia mouse ului
+    def get_cellpos(self, x:int, y:int):
+        """Returneaza coordonatele celulei la pozitia mouse ului
+
+        Args:
+            x (int): coordonata de pe lini (i)
+            y (int): coordonata de pe coloana (j)
+
         Returns:
             tuple: (row, col) sau None
         """

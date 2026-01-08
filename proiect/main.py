@@ -142,8 +142,12 @@ class MinesweeperApp:
         self.game.board.draw()
         self.screen.blit(self.game.board.board_surface, (0, board_offset_y))
     
-    def handle_endgame_action(self, action):
-        """Gestioneaza actiunea dupa endgame"""
+    def handle_endgame_action(self, action:str):
+        """Gestioneaza actiunea dupa endgame"
+
+        Args:
+            action (string): game state ul
+        """
         if action == "restart":
             self.game.new_game()
         elif action == "menu":
@@ -153,6 +157,6 @@ class MinesweeperApp:
             self.running = False
 
 
-if __name__ == "__main__":
-    app = MinesweeperApp()
-    app.run()
+
+app = MinesweeperApp()
+app.run()
