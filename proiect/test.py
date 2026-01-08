@@ -1,19 +1,25 @@
 import pygame
-pygame.init()
+from componente import Board
 
-# Creează fereastră
-screen = pygame.display.set_mode((740, 740))
-pygame.display.set_caption("Minesweeper Test")
+n = 12
 
-# Loop principal
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+def save_board_to_file(board, dif, filename="board.txt"):
+    with open(filename, "a") as f:  # "a" = append
+        f.write(f"{dif}\n")
+        for row in board.board_list:
+            f.write(" ".join([str(cell.type) for cell in row]) + "\n")
+        f.write("\n\n")
+
+dif = "easy"
+
+for i in range(n + 1):
+    if i % 4 == 0 and i != 0:  # Schimbă dificultatea la fiecare 4 iterații
+        if dif == "easy":
+            dif = "medium"
+        elif dif == "medium":
+            dif = "hard"
     
-    # Culoare de fundal
-    screen.fill((200, 200, 200))
-    pygame.display.flip()
+    board = Board(dif)
+    save_board_to_file(board, dif)
 
-pygame.quit()
+print(f"Salvat {n+1} board-uri în board.txt")

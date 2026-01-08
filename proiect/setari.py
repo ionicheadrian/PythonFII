@@ -23,9 +23,8 @@ ROWS=15
 COLS=15
 FPS=60
 TITLE="Minesweeper - FII"
-MINES=7 #default o sa le schimbam pe parcurs
-LATIME = TILESIZE * ROWS
-INALTIME = TILESIZE * COLS 
+LATIME = int(TILESIZE * ROWS)
+INALTIME =int(TILESIZE * COLS) 
 
 
 #procesarea pozelor din ./poze

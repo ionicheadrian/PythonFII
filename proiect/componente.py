@@ -1,11 +1,20 @@
+import random
 import pygame
 from setari import *
 
 
 
 
+
+
 class Cell:
+    
     def __init__(self,x,y,image,type,revealed=False,flagged=False):
+        # types list
+        # "0" -> nu stim ce e (acoperita)
+        # "x" -> mina
+        # "c" -> cifra (1,2,..8)
+        # "/" -> celula goala (nu are vecini bomba si este revealed)
         self.x=x*TILESIZE
         self.y=y*TILESIZE
         self.image=image
@@ -31,21 +40,51 @@ class Cell:
 
 
 class Board:
-    def __init__(self):
-        self.board_surface=pygame.Surface(LATIME,INALTIME)
+    def __init__(self,dif:str):
+        self.board_surface=pygame.Surface((LATIME,INALTIME))
         self.board_list=[]
         for l in range(ROWS):
             a=[]
             for col in range(COLS):
-                a.append(Cell(l,col,c,'.'))
+                a.append(Cell(l,col,c,0))
             self.board_list.append(a)
-        self.place_mines()
+        self.place_mines(dif)
         self.place_scores()
         
         
-        def place_mines(self):
-            pass
+    def place_mines(self, dif:str):
+            k_mines=0
+            n=ROWS
+            if dif == "easy":
+                k_mines= int(n*n*0.15)
+            elif dif =="medium":
+                k_mines= int(n*n*0.2)
+            elif dif == "hard":
+                k_mines = int(n*n*0.25)
+            print(f"avem {k_mines} mine")
+            while k_mines:
+                x=int(random.randint(0,n-1))
+                y=int(random.randint(0,n-1))
+                
+                if self.board_list[x][y].type == 0:
+                    self.board_list[x][y].image =c_mina
+                    self.board_list[x][y].type = "x"
+                    # print(f"avem asta la {x} si {y} : {self.board_list[x][y].type}")
+                    k_mines-=1
+                
+                
+                
         
-        def place_scores(self):
-            pass
+    def place_scores(self):
+        for i in range(len(self.board_list)):
+            for j in range(len(self.board_list[i])):
+                if self.board_list[i][j].type == "x":  # daca este mina
+                    directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (1, 1), (-1, -1), (1, -1), (-1, 1)]
+                    for dr, dc in directions:
+                        ni, nj = i + dr, j + dc
+                        # verif daca vecinul exista
+                        if 0 <= ni < len(self.board_list) and 0 <= nj < len(self.board_list[ni]):
+                            #daca vecinu NU este mina atunci incrementam
+                            if self.board_list[ni][nj].type != "x":
+                                self.board_list[ni][nj].type += 1
         
