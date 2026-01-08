@@ -125,11 +125,10 @@ class Board:
     def check_win(self):    
         for row in self.board_list:
             for celula in row:
-                # Dacă celula NU e mină ȘI NU e revealed → nu am câștigat încă
-                if celula.type != "x" and not celula.revealed:
-                    return False
-        
-        # Toate celulele non-mină sunt revealed → AI CÂȘTIGAT!
+                if celula.revealed == False:
+                    if celula.type == "x":
+                        if celula.flagged == False:
+                            return False
         return True
     
         
