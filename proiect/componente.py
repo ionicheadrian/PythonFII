@@ -22,17 +22,13 @@ class Cell:
         self.flagged=flagged
         self.type=type
         
-    def draw (self, board_surface:pygame.Surface):
-        """Functie care deseneaza corect celula dupa caracteristicile ei : flagged, revealed, empty, cu 74 de vecini
-        Args:
-            board_surface (pygame.Surface): suprafata pe care desenam tabla
-        """
-        if self.flagged==False and self.revealed==True:
-            board_surface.blit(self.image(self.x,self.y))
-        elif self.flagged==True and self.revealed==False:
-            board_surface.blit(c_flag,(self.x,self.y))
-        elif self.revealed==False:
-            board_surface.blit(c,(self.x,self.y))
+    def draw(self, board_surface: pygame.Surface):
+        if self.flagged and not self.revealed:
+            board_surface.blit(c_flag, (self.x, self.y))
+        elif self.revealed:
+            board_surface.blit(self.image, (self.x, self.y))  # Fix aici!
+        else:
+            board_surface.blit(c, (self.x, self.y))
             
                  
     def __repr__(self):
@@ -88,3 +84,18 @@ class Board:
                             if self.board_list[ni][nj].type != "x":
                                 self.board_list[ni][nj].type += 1
         
+    #dupa ce am calculat scorurile corect, asignam si imaginile 
+        for i in range(len(self.board_list)):
+            for j in range(len(self.board_list[i])):
+                cell_type=self.board_list[i][j].type
+                if cell_type == 0:
+                    self.board_list[i][j].image=c_goala
+                elif cell_type != "x" and cell_type>0:
+                    #inseamna ca suntem pe o celula care are scor (1-8)
+                    self.board_list[i][j].image=numere[cell_type-1] # DUPA  3 ORE MI AM DAT SEAMA NUMERE ESTE 1-8 SI EU CAUTAM 0-7..... ;(
+        
+        
+    def draw(self):
+        for row in self.board_list:
+            for cell in row:
+                cell.draw(self.board_surface)
