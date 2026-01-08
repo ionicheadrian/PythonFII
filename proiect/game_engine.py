@@ -9,8 +9,21 @@ class Game_engine:
         self.screen = pygame.display.set_mode((LATIME, INALTIME))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
-        self.running = True
+        
         self.dif = dif
+        self.playing = False
+        self.board = None
+        
+        # Timer 
+        self.first_click = True
+        self.start_time = 0
+        self.elapsed_time = 0
+        self.game_over = False
+        self.victory = False
+        
+        # Stats
+        self.total_mines = 0
+        self.mines_left = 0
     
     def show_endframe(self, message_type):
         """
@@ -76,90 +89,107 @@ class Game_engine:
         
         return False
     
-    
     def new_game(self):
         self.playing = True
         #initializam o tabla (random)
         #tho to do trebuie sa generam tabla dupa primul click :P
         self.board = Board(self.dif)
     
-    def run_game(self):
-        self.playing = True
+    def handle_click(self,type:int,row:int,col:int):
+        """_summary_
+
+        Args:
+            type (int): _description_
+            row (int): _description_
+            col (int): _description_
+        """
+        if type == 1: #left click
+            if not self.playing or self.game_over:
+                return "continue"
         
-        while self.playing:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.playing = False
-                    self.running = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1: 
-                        x, y = pygame.mouse.get_pos()
-                        row = x // TILESIZE
-                        col = y // TILESIZE
-                        if 0 <= row < ROWS and 0 <= col < COLS:
-                            #AM DAT DE BOMBA
-                            celula = self.board.board_list[row][col]
-                            if celula.type == "x" and celula.flagged == False:
-                                print(f"Clicked on cell ({row}, {col}) SI E BOMBA")
-                                celula.revealed = True
-                                celula.image = c_exploded
-                                if self.show_endframe("lose")==True:
-                                        self.board=Board(self.dif)
-                                        print("Board nou generat!")
-                                        
-                                        
-                                        
-                                #NU AVEM VOIE SA DAM REVEAL PESTE FLAG
-                            elif celula.flagged == False:
-                                if celula.type == 0:#daca avem celula goala
-                                    self.board.flood_reveal(row, col)
-                                else:
-                                    celula.revealed = True
-                                
-                                print(f"Clicked on cell ({row}, {col}) - Type: {celula.type}")
-                                
-                                if self.board.check_win():
-                                    if self.show_endframe("win") == True:
-                                        self.board=Board(self.dif)
-                                        print("Board nou generat!")
-                                
-                    
-                    elif event.button == 3:
-                        x, y = pygame.mouse.get_pos()
-                        row = x // TILESIZE
-                        col = y // TILESIZE
-                        if 0 <= row < ROWS and 0 <= col < COLS:
-                            celula = self.board.board_list[row][col]
-                            if not celula.revealed:
-                                celula.flagged = not celula.flagged
-                                if self.board.check_win():
-                                    if self.show_endframe("win") == True:
-                                        self.board=Board(self.dif)
-                                        print("Board nou generat!")
-                                    
-                                
-                #GAME RESET 
-                if event.type == pygame.KEYDOWN:
-                    if event.key==pygame.K_r:
-                        self.playing=False    
-                    if event.key==pygame.K_w:
-                        n=range(len(self.board.board_list))
-                        for row in n:
-                            for col in n:
-                                celula= self.board.board_list[row][col]
-                                if celula.type == "x":
-                                    celula.revealed = not celula.revealed    
-                                
-                                
-                                
+            if not (0 <= row < ROWS and 0 <= col < COLS):
+                return "continue"
             
-            self.draw()
-            pygame.display.flip()
-            self.clock.tick(FPS)
+            celula = self.board.board_list[row][col]
+            
+            # Primul click pornește timer-ul
+            if self.first_click:
+                self.first_click = False
+                self.start_time = pygame.time.get_ticks() / 1000
+            
+            # Click pe bombă
+            if celula.type == "x" and not celula.flagged:
+                celula.revealed = True
+                celula.image = c_exploded
+                self.board.reveal_bombs()
+                self.game_over = True
+                return "lose"
+            
+            # Click pe celulă normală (nu flagged)
+            if not celula.flagged:
+                if celula.type == 0:  # Celulă goală
+                    self.board.flood_reveal(row, col)
+                else:
+                    celula.revealed = True
+                
+                # Verifică dacă am câștigat
+                if self.board.check_win():
+                    self.game_over = True
+                    self.victory = True
+                    return "win"
+            
+            return "continue"
     
+        elif type == 3: #right clickkk
+            if not self.playing or self.game_over:
+                return "continue"
+            
+            if not (0 <= row < ROWS and 0 <= col < COLS):
+                return "continue"
+            
+            celula = self.board.board_list[row][col]
+            
+            if not celula.revealed:
+                celula.flagged = not celula.flagged
+                
+                # Update mines_left counter
+                if celula.flagged:
+                    self.mines_left -= 1
+                else:
+                    self.mines_left += 1
+                
+                # Verifică dacă am câștigat
+                if self.board.check_win():
+                    self.game_over = True
+                    self.victory = True
+                    return "win"
+            
+            return "continue"
+        
     def draw(self):
         self.screen.fill((200, 200, 74))
         # Desenăm tabla
         self.board.draw()
         # Punem board_surface pe screen
         self.screen.blit(self.board.board_surface, (0, 0))
+
+    def update_timer(self):
+        """Actualizează timer-ul (doar dacă jocul e activ)"""
+        if self.playing and not self.first_click and not self.game_over:
+            self.elapsed_time = int(pygame.time.get_ticks() / 1000 - self.start_time)
+            
+    def get_cellpos(self, x, y):
+        """
+        Returnează coordonatele celulei la poziția mouse-ului
+        Returns:
+            tuple: (row, col) sau None
+        """
+        row = x // TILESIZE
+        col = y // TILESIZE
+        if 0 <= row < ROWS and 0 <= col < COLS:
+            return (row, col)
+        return None      
+            
+            
+            
+            
