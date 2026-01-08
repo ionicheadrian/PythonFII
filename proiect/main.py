@@ -4,7 +4,7 @@ import pygame
 from setari import *
 from componente import *
 
-class Game:
+class Game_engine:
     def __init__(self, dif: str):
         pygame.init()
         self.screen = pygame.display.set_mode((LATIME, INALTIME))
@@ -78,8 +78,6 @@ class Game:
         return False
     
     
-    
-        
     def new_game(self):
         self.playing = True
         #initializam o tabla (random)
@@ -136,7 +134,9 @@ class Game:
                             if not celula.revealed:
                                 celula.flagged = not celula.flagged
                                 if self.board.check_win():
-                                    self.show_endframe("win")
+                                    if self.show_endframe("win") == True:
+                                        self.board=Board(self.dif)
+                                        print("Board nou generat!")
                                     
                                 
                 #GAME RESET 
@@ -168,7 +168,7 @@ class Game:
 
 # Main loop
 dif=input("dificultatea? : ")
-game = Game(dif)
+game = Game_engine(dif)
 while game.running:
     game.new_game()
     game.run_game()

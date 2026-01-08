@@ -122,14 +122,20 @@ class Board:
                 if celula.type=="x":
                     celula.revealed = True
     
-    def check_win(self):    
+    def check_win(self):
+        flagged = True
+        celulele_revealed = True
+        
         for row in self.board_list:
             for celula in row:
-                if celula.revealed == False:
-                    if celula.type == "x":
-                        if celula.flagged == False:
-                            return False
-        return True
+                if celula.type == "x":
+                    if not celula.flagged:
+                        flagged  = False
+                else:
+                    if not celula.revealed:
+                        celulele_revealed = False
+    
+        return flagged or celulele_revealed
     
         
     def draw(self):
