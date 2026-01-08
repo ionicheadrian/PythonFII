@@ -12,6 +12,73 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.dif = dif
+    
+    def show_endframe(self, message_type):
+        """
+        Afiseaza overlay-ul de final (victorie sau înfrângere)
+        Args:
+            message_type (str): "win" sau "lose"
+        """
+        if message_type == "lose":
+            self.board.reveal_bombs() 
+        self.draw()
+        
+        #overlay semitransparent frumos asa :D
+        overlay = pygame.Surface((LATIME, INALTIME))
+        overlay.set_alpha(200)
+        overlay.fill((26, 26, 46))
+        self.screen.blit(overlay, (0, 0))
+        
+        #Creem mesajul si culoarea in functie de message_type
+        if message_type == "win":
+            message = "VICTORY!!"
+            color = GREEN
+            sub_message = f"Completed in {int(pygame.time.get_ticks() / 1000)}s!"
+        else:  # "lose"
+            message = "GAME OVER "
+            color = RED
+            sub_message = "Better luck next time!"           
+        
+        font_large = pygame.font.Font(None, 72)
+        text = font_large.render(message, True, color)
+        text_rect = text.get_rect(center=(LATIME // 2, INALTIME // 2 - 50))
+        self.screen.blit(text, text_rect)
+        
+        font_medium = pygame.font.Font(None, 40)
+        sub_text = font_medium.render(sub_message, True, (236, 240, 241))
+        sub_rect = sub_text.get_rect(center=(LATIME // 2, INALTIME // 2 + 20))
+        self.screen.blit(sub_text, sub_rect)
+        
+        font_small = pygame.font.Font(None, 30)
+        restart_text = "Press R to restart or ESC to exit"
+        restart = font_small.render(restart_text, True, (149, 165, 166))
+        restart_rect = restart.get_rect(center=(LATIME // 2, INALTIME // 2 + 80))
+        self.screen.blit(restart, restart_rect)
+        
+        pygame.display.flip()
+        
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.playing = False
+                    self.running = False
+                    return False
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        return True
+                    elif event.key == pygame.K_ESCAPE: 
+                        self.playing = False
+                        self.running = False
+                        return False
+            
+            self.clock.tick(FPS)
+        
+        return False
+    
+    
+    
         
     def new_game(self):
         self.playing = True
@@ -39,22 +106,13 @@ class Game:
                                 print(f"Clicked on cell ({row}, {col}) SI E BOMBA")
                                 celula.revealed = True
                                 celula.image = c_exploded
-                                self.draw()
-                                
-                                # Afișează text GAME OVER
-                                font = pygame.font.Font(None, 74)
-                                text = font.render("GAME OVER!", True, RED)
-                                text_rect = text.get_rect(center=(LATIME//2, INALTIME//2))
-                                self.screen.blit(text, text_rect)
-                                
-                                pygame.display.flip()
-                                pygame.time.wait(2000)
-                                
-                                # Board nou!
-                                self.board = Board(self.dif)
-                                print("Board nou generat!")
+                                if self.show_endframe("lose")==True:
+                                        self.board=Board(self.dif)
+                                        print("Board nou generat!")
+                                        
+                                        
+                                        
                                 #NU AVEM VOIE SA DAM REVEAL PESTE FLAG
-                                
                             elif celula.flagged == False:
                                 if celula.type == 0:#daca avem celula goala
                                     self.board.flood_reveal(row, col)
@@ -64,16 +122,9 @@ class Game:
                                 print(f"Clicked on cell ({row}, {col}) - Type: {celula.type}")
                                 
                                 if self.board.check_win():
-                                    self.draw()
-                                    font = pygame.font.Font(None, 74)
-                                    text = font.render("AI CÂȘTIGAT!", True, GREEN)
-                                    text_rect = text.get_rect(center=(LATIME//2, INALTIME//2))
-                                    self.screen.blit(text, text_rect)
-                                    
-                                    pygame.display.flip()
-                                    pygame.time.wait(3000)
-                                    self.board = Board(self.dif)
-                                    print("Board nou generat!")
+                                    if self.show_endframe("win") == True:
+                                        self.board=Board(self.dif)
+                                        print("Board nou generat!")
                                 
                     
                     elif event.button == 3:
@@ -84,6 +135,9 @@ class Game:
                             celula = self.board.board_list[row][col]
                             if not celula.revealed:
                                 celula.flagged = not celula.flagged
+                                if self.board.check_win():
+                                    self.show_endframe("win")
+                                    
                                 
                 #GAME RESET 
                 if event.type == pygame.KEYDOWN:

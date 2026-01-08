@@ -116,11 +116,20 @@ class Board:
         for dr,dc in directions:
             self.flood_reveal(row + dr, col + dc)
     
-    def check_win(self):
+    def reveal_bombs(self):
         for row in self.board_list:
             for celula in row:
+                if celula.type=="x":
+                    celula.revealed = True
+    
+    def check_win(self):    
+        for row in self.board_list:
+            for celula in row:
+                # Dacă celula NU e mină ȘI NU e revealed → nu am câștigat încă
                 if celula.type != "x" and not celula.revealed:
                     return False
+        
+        # Toate celulele non-mină sunt revealed → AI CÂȘTIGAT!
         return True
     
         
