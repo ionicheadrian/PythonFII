@@ -94,6 +94,30 @@ class Board:
                     #inseamna ca suntem pe o celula care are scor (1-8)
                     self.board_list[i][j].image=numere[cell_type-1] # DUPA  3 ORE MI AM DAT SEAMA NUMERE ESTE 1-8 SI EU CAUTAM 0-7..... ;(
         
+    def flood_reveal(self,row,col):
+        #cazurile de baza
+        if row < 0 or row >= len(self.board_list):
+            return
+        if col < 0 or col >= len(self.board_list[0]):
+            return
+        celula = self.board_list[row][col]
+        
+        if celula.revealed or celula.flagged:
+            return
+        if celula.type == "x":
+            return
+        celula.revealed=True
+        if celula.type != 0:
+            return
+        
+        
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1),(1,1),(-1, -1),(1,-1),(-1,1)]
+        
+        for dr,dc in directions:
+            self.flood_reveal(row + dr, col + dc)
+    
+    
+    
         
     def draw(self):
         for row in self.board_list:

@@ -29,22 +29,63 @@ class Game:
                     self.running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1: 
-                        mouse_x, mouse_y = pygame.mouse.get_pos()
-                        #verificam celula apasata 
-                        row = mouse_x // TILESIZE
-                        col = mouse_y // TILESIZE
+                        x, y = pygame.mouse.get_pos()
+                        row = x // TILESIZE
+                        col = y // TILESIZE
                         if 0 <= row < ROWS and 0 <= col < COLS:
-                            self.board.board_list[row][col].revealed = True
-                            print(f"Clicked on cell ({row}, {col}) - Type: {self.board.board_list[row][col].type}")
+                            #AM DAT DE BOMBA
+                            celula = self.board.board_list[row][col]
+                            if celula.type == "x" and celula.flagged == False:
+                                print(f"Clicked on cell ({row}, {col}) SI E BOMBA")
+                                celula.revealed = True
+                                celula.image = c_exploded
+                                self.draw()
+                                
+                                # Afișează text GAME OVER
+                                font = pygame.font.Font(None, 74)
+                                text = font.render("GAME OVER!", True, RED)
+                                text_rect = text.get_rect(center=(LATIME//2, INALTIME//2))
+                                self.screen.blit(text, text_rect)
+                                
+                                pygame.display.flip()
+                                pygame.time.wait(2000)
+                                
+                                # Board nou!
+                                self.board = Board(self.dif)
+                                print("Board nou generat!")
+                                #NU AVEM VOIE SA DAM REVEAL PESTE FLAG
+                            elif celula.flagged == False:
+                                if celula.type == 0:#daca avem celula goala
+                                    self.board.flood_reveal(row, col)
+                                else:
+                                    celula.revealed = True
+                                
+                                print(f"Clicked on cell ({row}, {col}) - Type: {celula.type}")
+                                
                     
                     elif event.button == 3:
-                        mouse_x, mouse_y = pygame.mouse.get_pos()
-                        row = mouse_x // TILESIZE
-                        col = mouse_y // TILESIZE
+                        x, y = pygame.mouse.get_pos()
+                        row = x // TILESIZE
+                        col = y // TILESIZE
                         if 0 <= row < ROWS and 0 <= col < COLS:
-                            cell = self.board.board_list[row][col]
-                            if not cell.revealed:
-                                cell.flagged = not cell.flagged
+                            celula = self.board.board_list[row][col]
+                            if not celula.revealed:
+                                celula.flagged = not celula.flagged
+                                
+                #GAME RESET 
+                if event.type == pygame.KEYDOWN:
+                    if event.key==pygame.K_r:
+                        self.playing=False    
+                    if event.key==pygame.K_w:
+                        n=range(len(self.board.board_list))
+                        for row in n:
+                            for col in n:
+                                celula= self.board.board_list[row][col]
+                                if celula.type == "x":
+                                    celula.revealed = True    
+                                
+                                
+                                
             
             self.draw()
             pygame.display.flip()
@@ -59,7 +100,8 @@ class Game:
 
 
 # Main loop
-game = Game("easy")
+dif=input("dificultatea? : ")
+game = Game(dif)
 while game.running:
     game.new_game()
     game.run_game()
