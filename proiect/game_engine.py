@@ -11,7 +11,7 @@ class Game_engine:
         #TOT CE INSEAMNA TIMERE + WIN / LOSE STATE
         self.first_click = True
         self.start_time = 0
-        self.elapsed_time = 0
+        self.timp = 0
         self.game_over = False
         self.victory = False
         
@@ -24,7 +24,7 @@ class Game_engine:
         self.playing = True
         self.board = Board(self.dif)
         self.first_click = True
-        self.elapsed_time = 0
+        self.timp = 0
         self.game_over = False
         self.victory = False
         
@@ -42,7 +42,7 @@ class Game_engine:
     def update_timer(self):
         """Actualizam timerul (DOAR DACA este un joc activ deci avem nevoie de self.playing)"""
         if self.playing and not self.first_click and not self.game_over:
-            self.elapsed_time = int(pygame.time.get_ticks() / 1000 - self.start_time)
+            self.timp = int(pygame.time.get_ticks() / 1000 - self.start_time)
     
     def handle_click(self,type:int,row, col):
         """Functie care gestioneza click-ul

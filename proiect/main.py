@@ -1,25 +1,26 @@
 import pygame
 from setari import *
 from game_engine import Game_engine
-from ui import UIManager
+from ui import UserInterface
 
 class MinesweeperApp:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((LATIME, INALTIME))
+        # Maresc inaltimea ferestrei pentru stats bar
+        self.screen = pygame.display.set_mode((LATIME, INALTIME + 60))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
         self.running = True
         
         # Managers
-        self.ui = UIManager(self.screen)
+        self.ui = UserInterface(self.screen)
         self.game = None
         
         # State
         self.state = "menu"  # "menu", "playing", "custom"
     
     def run(self):
-        """Main loop al aplicației"""
+        """Main loop al aplicatiei"""
         while self.running:
             if self.state == "menu":
                 self.run_menu()
@@ -43,7 +44,7 @@ class MinesweeperApp:
                     if selected_diff == "custom":
                         self.state = "custom"
                     elif selected_diff:
-                        # Start joc cu dificultatea selectată
+                        # Start joc cu dificultatea selectata
                         self.game = Game_engine(selected_diff)
                         self.game.new_game()
                         self.state = "playing"
@@ -67,8 +68,8 @@ class MinesweeperApp:
     
     def run_game(self):
         """Loop pentru joc activ"""
-        # Offset pentru stats bar (dacă vrei să afișezi stats sus)
-        board_offset_y = 0  # Poți să setezi 60 dacă vrei stats bar deasupra
+        # Offset pentru stats bar
+        board_offset_y = 60
         
         while self.state == "playing" and self.running:
             # Update timer
@@ -89,55 +90,50 @@ class MinesweeperApp:
                         row, col = cell_coords
                         
                         if event.button == 1:  # Left click
-                            result = self.game.handle_click(event.button,row, col)
+                            result = self.game.handle_click(int(event.button), row, col)
                             
                             if result == "lose":
-                                action = self.ui.show_endframe("lose", self.game.elapsed_time)
-                                self.endgame_action(action)
+                                action = self.ui.show_endframe("lose", self.game.timp)
+                                self.handle_endgame_action(action)
                             
                             elif result == "win":
-                                action = self.ui.show_endframe("win", self.game.elapsed_time)
-                                self.endgame_action(action)
+                                action = self.ui.show_endframe("win", self.game.timp)
+                                self.handle_endgame_action(action)
                         
-                        elif event.button == 3:  # Right click
-                            result = self.game.handle_click(event.button,row, col)
+                        elif event.button == 3:
+                            result = self.game.handle_click(int(event.button), row, col)
                             
                             if result == "win":
-                                action = self.ui.show_endframe("win", self.game.elapsed_time)
-                                self.endgame_action(action)
+                                action = self.ui.show_endframe("win", self.game.timp)
+                                self.handle_endgame_action(action)
                 
                 # Keyboard shortcuts
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        # Restart joc
                         self.game.new_game()
-                    
                     elif event.key == pygame.K_ESCAPE:
-                        # Back to menu
                         self.state = "menu"
-                    
                     elif event.key == pygame.K_w:
-                        # Debug: toggle mine visibility
-                        self.game.toggle_mines_visibility()
+                        self.game.necuratu()
             
-            # Drawing
-            self.draw_game()
+            # Drawing - FIX: Trec board_offset_y ca parametru
+            self.draw_game(board_offset_y)
             pygame.display.flip()
             self.clock.tick(FPS)
     
-    def draw_game(self):
-        """Desenează starea curentă a jocului"""
+    def draw_game(self, board_offset_y):
+        """Deseneaza starea curenta a jocului"""
         self.screen.fill((200, 200, 74))
         
-        # Desenează board-ul
-        self.game.board.draw()
-        self.screen.blit(self.game.board.board_surface, (0, 0))
+        # Desenez stats bar-ul sus
+        self.ui.draw_timer_and_stats(self.game.timp, self.game.mines)
         
-        # Poți adăuga stats bar aici dacă vrei
-        self.ui.draw_stats(self.game.elapsed_time, self.game.mines_left)
+        # Desenez board-ul sub stats bar
+        self.game.board.draw()
+        self.screen.blit(self.game.board.board_surface, (0, board_offset_y))
     
-    def endgame_action(self, action):
-        """Gestionează acțiunea după endgame"""
+    def handle_endgame_action(self, action):
+        """Gestioneaza actiunea dupa endgame"""
         if action == "restart":
             self.game.new_game()
         elif action == "menu":

@@ -2,11 +2,6 @@ import random
 import pygame
 from setari import *
 
-
-
-
-
-
 class Cell:
     
     def __init__(self,x,y,image,type,revealed=False,flagged=False):
@@ -23,10 +18,11 @@ class Cell:
         self.type=type
         
     def draw(self, board_surface: pygame.Surface):
-        if self.flagged and not self.revealed:
+        # FIX: revealed are prioritate - la game over aratam bombele chiar daca sunt flagged
+        if self.revealed:
+            board_surface.blit(self.image, (self.x, self.y))
+        elif self.flagged:
             board_surface.blit(c_flag, (self.x, self.y))
-        elif self.revealed:
-            board_surface.blit(self.image, (self.x, self.y))  # Fix aici!
         else:
             board_surface.blit(c, (self.x, self.y))
             
