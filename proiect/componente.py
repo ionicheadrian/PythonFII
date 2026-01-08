@@ -115,7 +115,7 @@ class Board:
     def reveal_bombs(self):
         for row in self.board_list:
             for celula in row:
-                if celula.type=="x":
+                if celula.type=="x" and not celula.flagged:
                     celula.revealed = True
     
     def check_win(self):

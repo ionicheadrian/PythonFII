@@ -93,10 +93,16 @@ class MinesweeperApp:
                             result = self.game.handle_click(int(event.button), row, col)
                             
                             if result == "lose":
+                                # FIX: Desenez board-ul cu bombele revealed INAINTE de overlay
+                                self.draw_game(board_offset_y)
+                                pygame.display.flip()
                                 action = self.ui.show_endframe("lose", self.game.timp)
                                 self.handle_endgame_action(action)
                             
                             elif result == "win":
+                                # Desenez board-ul final INAINTE de overlay
+                                self.draw_game(board_offset_y)
+                                pygame.display.flip()
                                 action = self.ui.show_endframe("win", self.game.timp)
                                 self.handle_endgame_action(action)
                         
@@ -104,6 +110,9 @@ class MinesweeperApp:
                             result = self.game.handle_click(int(event.button), row, col)
                             
                             if result == "win":
+                                # Desenez board-ul final INAINTE de overlay
+                                self.draw_game(board_offset_y)
+                                pygame.display.flip()
                                 action = self.ui.show_endframe("win", self.game.timp)
                                 self.handle_endgame_action(action)
                 
@@ -116,9 +125,10 @@ class MinesweeperApp:
                     elif event.key == pygame.K_w:
                         self.game.necuratu()
             
-            # Drawing - FIX: Trec board_offset_y ca parametru
-            self.draw_game(board_offset_y)
-            pygame.display.flip()
+            # Drawing - desenez doar daca jocul e activ
+            if self.state == "playing":
+                self.draw_game(board_offset_y)
+                pygame.display.flip()
             self.clock.tick(FPS)
     
     def draw_game(self, board_offset_y):
