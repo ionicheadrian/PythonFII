@@ -116,7 +116,12 @@ class Board:
         for dr,dc in directions:
             self.flood_reveal(row + dr, col + dc)
     
-    
+    def check_win(self):
+        for row in self.board_list:
+            for celula in row:
+                if celula.type != "x" and not celula.revealed:
+                    return False
+        return True
     
         
     def draw(self):

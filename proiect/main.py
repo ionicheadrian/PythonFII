@@ -54,6 +54,7 @@ class Game:
                                 self.board = Board(self.dif)
                                 print("Board nou generat!")
                                 #NU AVEM VOIE SA DAM REVEAL PESTE FLAG
+                                
                             elif celula.flagged == False:
                                 if celula.type == 0:#daca avem celula goala
                                     self.board.flood_reveal(row, col)
@@ -61,6 +62,18 @@ class Game:
                                     celula.revealed = True
                                 
                                 print(f"Clicked on cell ({row}, {col}) - Type: {celula.type}")
+                                
+                                if self.board.check_win():
+                                    self.draw()
+                                    font = pygame.font.Font(None, 74)
+                                    text = font.render("AI CÂȘTIGAT!", True, GREEN)
+                                    text_rect = text.get_rect(center=(LATIME//2, INALTIME//2))
+                                    self.screen.blit(text, text_rect)
+                                    
+                                    pygame.display.flip()
+                                    pygame.time.wait(3000)
+                                    self.board = Board(self.dif)
+                                    print("Board nou generat!")
                                 
                     
                     elif event.button == 3:
@@ -82,7 +95,7 @@ class Game:
                             for col in n:
                                 celula= self.board.board_list[row][col]
                                 if celula.type == "x":
-                                    celula.revealed = True    
+                                    celula.revealed = not celula.revealed    
                                 
                                 
                                 
