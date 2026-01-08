@@ -1,176 +1,152 @@
-# main.py - modificări complete
-
 import pygame
 from setari import *
-from componente import *
+from game_engine import Game_engine
+from ui import UIManager
 
-class Game_engine:
-    def __init__(self, dif: str):
+class MinesweeperApp:
+    def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((LATIME, INALTIME))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
         self.running = True
-        self.dif = dif
+        
+        # Managers
+        self.ui = UIManager(self.screen)
+        self.game = None
+        
+        # State
+        self.state = "menu"  # "menu", "playing", "custom"
     
-    def show_endframe(self, message_type):
-        """
-        Afiseaza overlay-ul de final (victorie sau înfrângere)
-        Args:
-            message_type (str): "win" sau "lose"
-        """
-        if message_type == "lose":
-            self.board.reveal_bombs() 
-        self.draw()
+    def run(self):
+        """Main loop al aplicației"""
+        while self.running:
+            if self.state == "menu":
+                self.run_menu()
+            elif self.state == "playing":
+                self.run_game()
+            elif self.state == "custom":
+                self.run_custom_menu()
         
-        #overlay semitransparent frumos asa :D
-        overlay = pygame.Surface((LATIME, INALTIME))
-        overlay.set_alpha(200)
-        overlay.fill((26, 26, 46))
-        self.screen.blit(overlay, (0, 0))
-        
-        #Creem mesajul si culoarea in functie de message_type
-        if message_type == "win":
-            message = "VICTORY!!"
-            color = GREEN
-            sub_message = f"Completed in {int(pygame.time.get_ticks() / 1000)}s!"
-        else:  # "lose"
-            message = "GAME OVER "
-            color = RED
-            sub_message = "Better luck next time!"           
-        
-        font_large = pygame.font.Font(None, 72)
-        text = font_large.render(message, True, color)
-        text_rect = text.get_rect(center=(LATIME // 2, INALTIME // 2 - 50))
-        self.screen.blit(text, text_rect)
-        
-        font_medium = pygame.font.Font(None, 40)
-        sub_text = font_medium.render(sub_message, True, (236, 240, 241))
-        sub_rect = sub_text.get_rect(center=(LATIME // 2, INALTIME // 2 + 20))
-        self.screen.blit(sub_text, sub_rect)
-        
-        font_small = pygame.font.Font(None, 30)
-        restart_text = "Press R to restart or ESC to exit"
-        restart = font_small.render(restart_text, True, (149, 165, 166))
-        restart_rect = restart.get_rect(center=(LATIME // 2, INALTIME // 2 + 80))
-        self.screen.blit(restart, restart_rect)
-        
-        pygame.display.flip()
-        
-        waiting = True
-        while waiting:
+        pygame.quit()
+    
+    def run_menu(self):
+        """Loop pentru meniu"""
+        while self.state == "menu" and self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.playing = False
                     self.running = False
-                    return False
+                
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    selected_diff = self.ui.check_menu_click(event.pos)
+                    
+                    if selected_diff == "custom":
+                        self.state = "custom"
+                    elif selected_diff:
+                        # Start joc cu dificultatea selectată
+                        self.game = Game_engine(selected_diff)
+                        self.game.new_game()
+                        self.state = "playing"
+            
+            self.ui.draw_home_screen()
+            self.clock.tick(FPS)
+    
+    def run_custom_menu(self):
+        """Loop pentru meniul custom (TODO: implement custom settings)"""
+        while self.state == "custom" and self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
                 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_r:
-                        return True
-                    elif event.key == pygame.K_ESCAPE: 
-                        self.playing = False
-                        self.running = False
-                        return False
+                    if event.key == pygame.K_ESCAPE:
+                        self.state = "menu"
             
+            self.ui.draw_custom_screen()
             self.clock.tick(FPS)
-        
-        return False
-    
-    
-    def new_game(self):
-        self.playing = True
-        #initializam o tabla (random)
-        #tho to do trebuie sa generam tabla dupa primul click :P
-        self.board = Board(self.dif)
     
     def run_game(self):
-        self.playing = True
+        """Loop pentru joc activ"""
+        # Offset pentru stats bar (dacă vrei să afișezi stats sus)
+        board_offset_y = 0  # Poți să setezi 60 dacă vrei stats bar deasupra
         
-        while self.playing:
+        while self.state == "playing" and self.running:
+            # Update timer
+            self.game.update_timer()
+            
+            # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.playing = False
                     self.running = False
+                    self.state = "menu"
+                
+                # Mouse clicks
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1: 
-                        x, y = pygame.mouse.get_pos()
-                        row = x // TILESIZE
-                        col = y // TILESIZE
-                        if 0 <= row < ROWS and 0 <= col < COLS:
-                            #AM DAT DE BOMBA
-                            celula = self.board.board_list[row][col]
-                            if celula.type == "x" and celula.flagged == False:
-                                print(f"Clicked on cell ({row}, {col}) SI E BOMBA")
-                                celula.revealed = True
-                                celula.image = c_exploded
-                                if self.show_endframe("lose")==True:
-                                        self.board=Board(self.dif)
-                                        print("Board nou generat!")
-                                        
-                                        
-                                        
-                                #NU AVEM VOIE SA DAM REVEAL PESTE FLAG
-                            elif celula.flagged == False:
-                                if celula.type == 0:#daca avem celula goala
-                                    self.board.flood_reveal(row, col)
-                                else:
-                                    celula.revealed = True
-                                
-                                print(f"Clicked on cell ({row}, {col}) - Type: {celula.type}")
-                                
-                                if self.board.check_win():
-                                    if self.show_endframe("win") == True:
-                                        self.board=Board(self.dif)
-                                        print("Board nou generat!")
-                                
+                    x, y = pygame.mouse.get_pos()
+                    cell_coords = self.game.get_cellpos(x, y - board_offset_y)
                     
-                    elif event.button == 3:
-                        x, y = pygame.mouse.get_pos()
-                        row = x // TILESIZE
-                        col = y // TILESIZE
-                        if 0 <= row < ROWS and 0 <= col < COLS:
-                            celula = self.board.board_list[row][col]
-                            if not celula.revealed:
-                                celula.flagged = not celula.flagged
-                                if self.board.check_win():
-                                    if self.show_endframe("win") == True:
-                                        self.board=Board(self.dif)
-                                        print("Board nou generat!")
-                                    
-                                
-                #GAME RESET 
+                    if cell_coords:
+                        row, col = cell_coords
+                        
+                        if event.button == 1:  # Left click
+                            result = self.game.handle_click(event.button,row, col)
+                            
+                            if result == "lose":
+                                action = self.ui.show_endframe("lose", self.game.elapsed_time)
+                                self.endgame_action(action)
+                            
+                            elif result == "win":
+                                action = self.ui.show_endframe("win", self.game.elapsed_time)
+                                self.endgame_action(action)
+                        
+                        elif event.button == 3:  # Right click
+                            result = self.game.handle_click(event.button,row, col)
+                            
+                            if result == "win":
+                                action = self.ui.show_endframe("win", self.game.elapsed_time)
+                                self.endgame_action(action)
+                
+                # Keyboard shortcuts
                 if event.type == pygame.KEYDOWN:
-                    if event.key==pygame.K_r:
-                        self.playing=False    
-                    if event.key==pygame.K_w:
-                        n=range(len(self.board.board_list))
-                        for row in n:
-                            for col in n:
-                                celula= self.board.board_list[row][col]
-                                if celula.type == "x":
-                                    celula.revealed = not celula.revealed    
-                                
-                                
-                                
+                    if event.key == pygame.K_r:
+                        # Restart joc
+                        self.game.new_game()
+                    
+                    elif event.key == pygame.K_ESCAPE:
+                        # Back to menu
+                        self.state = "menu"
+                    
+                    elif event.key == pygame.K_w:
+                        # Debug: toggle mine visibility
+                        self.game.toggle_mines_visibility()
             
-            self.draw()
+            # Drawing
+            self.draw_game()
             pygame.display.flip()
             self.clock.tick(FPS)
     
-    def draw(self):
+    def draw_game(self):
+        """Desenează starea curentă a jocului"""
         self.screen.fill((200, 200, 74))
-        # Desenăm tabla
-        self.board.draw()
-        # Punem board_surface pe screen
-        self.screen.blit(self.board.board_surface, (0, 0))
+        
+        # Desenează board-ul
+        self.game.board.draw()
+        self.screen.blit(self.game.board.board_surface, (0, 0))
+        
+        # Poți adăuga stats bar aici dacă vrei
+        self.ui.draw_stats(self.game.elapsed_time, self.game.mines_left)
+    
+    def endgame_action(self, action):
+        """Gestionează acțiunea după endgame"""
+        if action == "restart":
+            self.game.new_game()
+        elif action == "menu":
+            self.state = "menu"
+            self.game = None
+        elif action == "quit":
+            self.running = False
 
 
-# Main loop
-dif=input("dificultatea? : ")
-game = Game_engine(dif)
-while game.running:
-    game.new_game()
-    game.run_game()
-
-pygame.quit()
+if __name__ == "__main__":
+    app = MinesweeperApp()
+    app.run()

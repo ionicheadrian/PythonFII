@@ -104,6 +104,7 @@ class Game_engine:
             col (int): _description_
         """
         if type == 1: #left click
+            print('s a apasat butonu sting')
             if not self.playing or self.game_over:
                 return "continue"
         
@@ -141,6 +142,7 @@ class Game_engine:
             return "continue"
     
         elif type == 3: #right clickkk
+            print("s a apasat butonu drept")
             if not self.playing or self.game_over:
                 return "continue"
             
